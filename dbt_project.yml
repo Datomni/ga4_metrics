@@ -1,0 +1,23 @@
+name: 'ga4_metrics'
+version: '1.0.0'
+
+config-version: 2
+require-dbt-version: [">=1.0.0", "<2.0.0"]
+
+# TODO: remove before open sourcing
+profile: 'ga4_metrics'
+
+
+vars:
+  ga4_events_src: "{{ source('ga4', 'events') }}" 
+
+
+models:
+  ga4_metrics:
+    +materialized: table
+    # +schema: ga4_metrics
+    tmp:
+      +materialized: view
+    
+# seeds:
+#   +schema: ga4_metrics
