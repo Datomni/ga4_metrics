@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: ga4
+    schema: "{{ var('ga4_schema', 'analytics') }}"
+    database: "{{ var('ga4_database', target.database) }}"
+    tables: 
+      - name: events
+        identifier: "{{ var('ga4_events_tbl', 'events_*') }}"
