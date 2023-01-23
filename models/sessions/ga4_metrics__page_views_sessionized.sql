@@ -5,11 +5,9 @@ WITH pageviews AS (
 
 numbered AS (
     --This CTE is responsible for assigning an all-time page view number for a
-    --given user_pseudo_id. We don't need to do this across devices because the
-    --whole point of this field is for sessionization, and sessions can't span
-    --multiple devices.
+    --given user_pseudo_id.
     SELECT  *,
-            row_number() over (partition by user_pseudo_id order by event_timestamp_utc) as page_view_number
+            ROW_NUMBER() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp_utc) AS page_view_number
     FROM pageviews
 ),
 
@@ -18,14 +16,14 @@ lagged AS (
     --We'll use this downstream to do timestamp math--it's how we determine the
     --period of inactivity.
     SELECT  *,
-            lag(event_timestamp_utc) over (partition by user_pseudo_id order by page_view_number) as previous_tstamp
+            LAG(event_timestamp_utc) OVER (PARTITION BY user_pseudo_id ORDER BY page_view_number) AS previous_tstamp
     FROM numbered
 ),
 
 diffed AS (
     --This CTE simply calculates `period_of_inactivity`.
     SELECT  *,
-            datetime_diff(cast(event_timestamp_utc as datetime), cast(previous_tstamp as datetime), second) as period_of_inactivity
+            datetime_diff(CAST(event_timestamp_utc AS DATETIME), CAST(previous_tstamp AS DATETIME), second) AS period_of_inactivity
     FROM lagged
 ),
 
@@ -34,7 +32,7 @@ new_sessions AS (
     --to this page view was greater than 30 minutes, the value is 1, otherwise
     --it's 0. We'll use this to calculate the user's session #.
     SELECT *,
-            case when period_of_inactivity <= 30 * 60 then 0 else 1 end as new_session
+            CASE WHEN period_of_inactivity <= 30 * 60 THEN 0 ELSE 1 END AS new_session
     FROM diffed
 ),
 
@@ -43,8 +41,8 @@ session_numbers AS (
     --This single field is the entire point of the entire prior series of
     --calculations.
     SELECT  *,
-            sum(new_session) over (partition by user_pseudo_id order by page_view_number
-                rows between unbounded preceding and current row) as session_number
+            SUM(new_session) OVER (PARTITION BY user_pseudo_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS session_number
     FROM new_sessions
 ),
 
@@ -68,8 +66,9 @@ session_ids AS (
             device,
             device_category,
             page_view_number,
-            to_hex(md5(cast(coalesce(cast(user_pseudo_id as string), '') || '-' || coalesce(cast(session_number as string), '') as string))) as session_id,
+            TO_HEX(MD5(CAST(COALESCE(CAST(user_pseudo_id AS string), '') || '-' || COALESCE(CAST(session_number AS string), '') AS string))) AS session_id,
     FROM session_numbers
 )
 
-select * from session_ids
+SELECT * 
+FROM session_ids

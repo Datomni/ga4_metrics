@@ -11,13 +11,16 @@ profile: 'ga4_metrics'
 vars:
   ga4_events_src: "{{ source('ga4', 'events') }}" 
 
+  # TODO: remove before open sourcing
+  ga4_schema: "analytics_338563309"
+
 
 models:
   ga4_metrics:
-    +materialized: table
-    # +schema: ga4_metrics
-    tmp:
-      +materialized: view
+    sessions:
+      +materialized: table
+      tmp:
+        +materialized: view
+    traffic_metrics:
+      +materialized: table
     
-# seeds:
-#   +schema: ga4_metrics

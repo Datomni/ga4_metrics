@@ -5,7 +5,7 @@ with sessions as (
 
 windowed AS (
     SELECT  *,
-            row_number() over (partition by user_pseudo_id order by sessions.session_start_tstamp) as session_number
+            ROW_NUMBER() OVER (PARTITION BY user_pseudo_id ORDER BY by session_start_tstamp) AS session_number
     FROM sessions
 )
 
