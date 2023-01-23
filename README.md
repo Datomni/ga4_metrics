@@ -1,17 +1,32 @@
 # Profitwell Metrics dbt Package
 ## What does this dbt package do?
-TBA
+* Flattens the GA4 events dataset by extracting the event parameter and user property values into their own fields
+* Groups events into sessions and surfaces session properties like session length, first and last host url, refferer host, and visitor source channel
+* Creates standardised metrics to provide an insight into visitor traffic broken down by source channel
+
 
 Refer to the table below for a detailed view of final models materialized by default within this package.
 
+**Visitor Sessions**
 |   model    | description |
 |------------|-------------|
-|ga4_metrics__events_flattened|TBA|
-|ga4_metrics__page_views|TBA|
-|ga4_metrics__page_views_sessionized|TBA|
-|ga4_metrics__sessions|TBA|
-|ga4_metrics__sessions_stitched|TBA|
-|ga4_metrics__visitor_traffic_aggregated|TBA|
+|ga4_metrics__events_flattened|Flattend GA4 dataset with the event parameter and user property values|
+|ga4_metrics__page_views|Page views with url host and referrers added|
+|ga4_metrics__page_views_sessionized|Page views with session ids assigned. New session is assumed after 30 minutes of inactivity|
+|ga4_metrics__sessions_stitched|Unique sessions and the session attributes enhanced with referrer mapping|
+|ga4_metrics__sessions|Ordered and numbered sessions for each visitor|
+
+
+**Traffic Metrics**
+|   model    | description |
+|------------|-------------|
+|ga4_metrics__aggregate_day_tofu|Unique number of daily visitors coming from organic, paid, social, referrer, earned media and marketplace sources. Each visitor is counted only once in any given month|
+|ga4_metrics__aggregate_month_to_avg_quarter_tofu|Monthly, quaterly and half-yearly average unique visitor numbers|
+|ga4_metrics__aggregate_month_tofu|Total number of unique visitors in the last two 30-day periods|
+|ga4_metrics__aggregate_year_tofu|Total number of unique visitors in the last two 365-day periods|
+|ga4_metrics__spot_month_tofu|Spot value of the unique daily visitors on the last day and the 30/90/180 days prior|
+|ga4_metrics__spot_year_tofu|Spot value of the unique daily visitors on the last day and the first day of the current year|
+
 
 
 ## Installation instructions
@@ -30,18 +45,21 @@ By default, this package looks for your data in your target database in the `ana
 config-version: 2
 
 vars:
-    ga4_schema: profitwell
+    ga4_schema: analytics
     ga4_database: your_database_name
 ```
 
-### (Optional) Step 3: Configure Table Names
-By default, events are read from the `events_*` table. If your input table name differs from this, you can configure the table name by adding them to your own dbt_project.yml file:
+### (Optional) Step 3: Configure Table Names and the timezone
+By default, events are read from the `events_*` table. If your input table name differs from this, you can configure the table name by adding them to your own dbt_project.yml file.
+In addition, you can configure which timezone should events be converted to for counting daily visitors. By default, daily visitors are counted according to the UTC timezone.
 ```
 # dbt_project.yml
 config-version: 2
 
 vars:
     ga4_events_tbl: "events_*"
+
+    timezone: "US/Pacific"
 ```
 
 ### (Optional) Step 4: Change the Build Schema

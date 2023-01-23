@@ -12,52 +12,54 @@ agg AS (
     SELECT DISTINCT session_id,
             user_pseudo_id,
             anonymous_id,
-            min(event_timestamp_utc) over ( partition by session_id ) as session_start_tstamp,
-            max(event_timestamp_utc) over ( partition by session_id ) as session_end_tstamp,
-            count(distinct event_timestamp_utc) over ( partition by session_id ) as page_views,
-            first_value(utm_source ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as utm_source,
-            first_value(utm_medium ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as utm_medium,
-            first_value(utm_campaign ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as utm_campaign,
-            first_value(utm_term ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as utm_term,
-            first_value(gclid ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as gclid,
-            first_value(referrer ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as referrer,
-            first_value(referrer_host ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as referrer_host,
-            first_value(device ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as device,
-            first_value(device_category ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as device_category,
-            first_value(page_url ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as first_page_url,
-            first_value(page_url_host ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as first_page_url_host,
-            last_value(page_url ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as last_page_url,
-            last_value(page_url_host ignore nulls) over (partition by session_id order by page_view_number
-                rows between unbounded preceding and unbounded following) as last_page_url_host
+            MIN(event_timestamp_utc) OVER ( PARTITION BY session_id ) AS session_start_tstamp,
+            MAX(event_timestamp_utc) OVER ( PARTITION BY session_id ) AS session_end_tstamp,
+            COUNT(DISTINCT event_timestamp_utc) OVER ( PARTITION BY session_id ) AS page_views,
+            FIRST_VALUE(utm_source IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS utm_source,
+            
+            FIRST_VALUE(utm_medium IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS utm_medium,
+            FIRST_VALUE(utm_campaign IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS utm_campaign,
+            FIRST_VALUE(utm_term IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS utm_term,
+            FIRST_VALUE(gclid IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS gclid,
+            FIRST_VALUE(referrer IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS referrer,
+            FIRST_VALUE(referrer_host IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS referrer_host,
+            FIRST_VALUE(device IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS device,
+            FIRST_VALUE(device_category IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS device_category,
+            FIRST_VALUE(page_url IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS first_page_url,
+            FIRST_VALUE(page_url_host IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS first_page_url_host,
+            
+            LAST_VALUE(page_url IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_page_url,
+            LAST_VALUE(page_url_host IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_page_url_host
     FROM pageviews_sessionized
 ),
 
 diffs AS (
     SELECT  *,
-            datetime_diff(cast(session_end_tstamp as datetime), cast(session_start_tstamp as datetime), second) as duration_in_s
+            DATETIME_DIFF(CAST(session_end_tstamp AS DATETIME), CAST(session_start_tstamp AS DATETIME), second) AS duration_in_s
     FROM agg
 ),
 
 tiers AS (
     SELECT  *,
-            case
-                when duration_in_s between 0 and 9 then '0s to 9s'
-                when duration_in_s between 10 and 29 then '10s to 29s'
-                when duration_in_s between 30 and 59 then '30s to 59s'
-                when duration_in_s > 59 then '60s or more'
-                else null end as duration_in_s_tier
+            CASE
+                WHEN duration_in_s BETWEEN 0 AND 9 THEN '0s to 9s'
+                WHEN duration_in_s BETWEEN 10 AND 29 THEN '10s to 29s'
+                WHEN duration_in_s BETWEEN 30 AND 59 THEN '30s to 59s'
+                WHEN duration_in_s > 59 THEN '60s or more'
+                ELSE NULL END AS duration_in_s_tier
     FROM diffs
 ),
 
