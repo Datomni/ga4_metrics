@@ -4,15 +4,9 @@ version: '1.0.0'
 config-version: 2
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
-# TODO: remove before open sourcing
-profile: 'ga4_metrics'
-
 
 vars:
   ga4_events_src: "{{ source('ga4', 'events') }}" 
-
-  # TODO: remove before open sourcing
-  ga4_schema: "analytics_338563309"
 
 
 models:
@@ -23,4 +17,3 @@ models:
         +materialized: view
     traffic_metrics:
       +materialized: table
-    

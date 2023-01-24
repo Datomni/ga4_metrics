@@ -1,0 +1,75 @@
+version: 2
+
+models:
+  - name: ga4_metrics__aggregate_day_tofu
+    columns:
+      - name: date
+        description: Event occurance date converted to the provided timezone.
+        tests:
+          - unique
+          - not_null
+  
+  - name: ga4_metrics__aggregate_month_to_avg_quarter_tofu
+    columns:
+      - name: dashboard_date
+        description: Arbitrary field providing consecutive dates for the aggregate periods. Aims to aid data visualization on a dashboard.
+        tests:
+          - unique
+          - not_null
+      - name: period
+        description: Text field indicating the start and and date of the aggregation period.
+        tests:
+          - unique
+          - not_null
+      
+  - name: ga4_metrics__aggregate_month_tofu
+    columns:
+      - name: dashboard_date
+        description: Arbitrary field providing consecutive dates for the aggregate periods. Aims to aid data visualization on a dashboard.
+        tests:
+          - unique
+          - not_null
+      - name: period
+        description: Text field indicating the start and and date of the aggregation period.
+        tests:
+          - unique
+          - not_null
+      
+  - name: ga4_metrics__aggregate_year_tofu
+    columns:
+      - name: dashboard_date
+        description: Arbitrary field providing consecutive dates for the aggregate periods. Aims to aid data visualization on a dashboard.
+        tests:
+          - unique
+          - not_null
+      - name: period
+        description: Text field indicating the start and and date of the aggregation period.
+        tests:
+          - unique
+          - not_null
+  
+  - name: ga4_metrics__spot_month_tofu
+    columns:
+      - name: dashboard_date
+        description: Arbitrary field providing consecutive dates for the aggregate periods. Aims to aid data visualization on a dashboard.
+        tests:
+          - unique
+          - not_null
+      - name: date
+        description: Event occurance date converted to the provided timezone.
+        tests:
+          - unique
+          - not_null
+
+  - name: ga4_metrics__spot_year_tofu
+    columns:
+      - name: dashboard_date
+        description: Arbitrary field providing consecutive dates for the aggregate periods. Aims to aid data visualization on a dashboard.
+        tests:
+          - unique
+          - not_null
+      - name: date
+        description: Event occurance date converted to the provided timezone.
+        tests:
+          - unique
+          - not_null

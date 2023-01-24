@@ -9,9 +9,9 @@ unioned AS (
         SUM(uv_organic_traffic_unique) AS total_uv_organic_traffic,
         SUM(uv_paid_traffic_unique) AS total_uv_paid_traffic,
         SUM(uv_social_traffic_unique) AS total_uv_social_traffic,
-        SUM(uv_earned_media_traffic_unique) AS total_uv_earned_media_traffic_unique,
-        SUM(uv_marketplace_traffic_unique) AS total_uv_marketplace_traffic_unique,
-        SUM(uv_referral_traffic_unique) AS total_uv_referral_traffic_unique
+        SUM(uv_earned_media_traffic_unique) AS total_uv_earned_media_traffic,
+        SUM(uv_marketplace_traffic_unique) AS total_uv_marketplace_traffic,
+        SUM(uv_referral_traffic_unique) AS total_uv_referral_traffic
     FROM src
     WHERE date >= (current_date() - INTERVAL 30 DAY)
 
@@ -22,9 +22,9 @@ unioned AS (
         SUM(uv_organic_traffic_unique) AS total_uv_organic_traffic,
         SUM(uv_paid_traffic_unique) AS total_uv_paid_traffic,
         SUM(uv_social_traffic_unique) AS total_uv_social_traffic,
-        SUM(uv_earned_media_traffic_unique) AS total_uv_earned_media_traffic_unique,
-        SUM(uv_marketplace_traffic_unique) AS total_uv_marketplace_traffic_unique,
-        SUM(uv_referral_traffic_unique) AS total_uv_referral_traffic_unique
+        SUM(uv_earned_media_traffic_unique) AS total_uv_earned_media_traffic,
+        SUM(uv_marketplace_traffic_unique) AS total_uv_marketplace_traffic,
+        SUM(uv_referral_traffic_unique) AS total_uv_referral_traffic
     FROM src
     WHERE date <= (current_date() - INTERVAL 31 DAY) AND 
         date >=  (current_date() - INTERVAL 60 DAY)
@@ -32,10 +32,10 @@ unioned AS (
 
 SELECT dashboard_date,
         period,
-        COALESCE(uv_organic_traffic_unique, 0) AS total_uv_organic_traffic,
-        COALESCE(uv_paid_traffic_unique, 0) AS total_uv_paid_traffic,
-        COALESCE(uv_social_traffic_unique, 0) AS total_uv_social_traffic,
-        COALESCE(uv_earned_media_traffic_unique, 0) AS total_uv_earned_media_traffic_unique,
-        COALESCE(uv_marketplace_traffic_unique, 0) AS total_uv_marketplace_traffic_unique,
-        COALESCE(uv_referral_traffic_unique, 0) AS total_uv_referral_traffic_unique
+        COALESCE(total_uv_organic_traffic, 0) AS total_uv_organic_traffic,
+        COALESCE(total_uv_paid_traffic, 0) AS total_uv_paid_traffic,
+        COALESCE(total_uv_social_traffic, 0) AS total_uv_social_traffic,
+        COALESCE(total_uv_earned_media_traffic, 0) AS total_uv_earned_media_traffic,
+        COALESCE(total_uv_marketplace_traffic, 0) AS total_uv_marketplace_traffic,
+        COALESCE(total_uv_referral_traffic, 0) AS total_uv_referral_traffic
 FROM unioned
