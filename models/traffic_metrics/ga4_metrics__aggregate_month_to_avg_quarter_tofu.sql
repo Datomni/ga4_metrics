@@ -22,9 +22,9 @@ traffic_last90_days AS (
            SUM(uv_organic_traffic_unique)/3 AS monthly_avg_uv_organic_traffic,
            SUM(uv_paid_traffic_unique)/3 AS monthly_avg_uv_paid_traffic,
            SUM(uv_social_traffic_unique)/3 AS monthly_avg_uv_social_traffic,
-           SUM(uv_earned_media_traffic_unique) AS monthly_avg_uv_earned_media_traffic,
-           SUM(uv_marketplace_traffic_unique) AS monthly_avg_uv_marketplace_traffic,
-           SUM(uv_referral_traffic_unique) AS monthly_avg_uv_referral_traffic
+           SUM(uv_earned_media_traffic_unique)/3 AS monthly_avg_uv_earned_media_traffic,
+           SUM(uv_marketplace_traffic_unique)/3 AS monthly_avg_uv_marketplace_traffic,
+           SUM(uv_referral_traffic_unique)/3 AS monthly_avg_uv_referral_traffic
     FROM src
     WHERE date >= DATE_ADD(CURRENT_DATE(), INTERVAL -90 DAY)
 ),
@@ -35,9 +35,9 @@ traffic_last180_days AS (
            SUM(uv_organic_traffic_unique)/6 AS monthly_avg_uv_organic_traffic,
            SUM(uv_paid_traffic_unique)/6 AS monthly_avg_uv_paid_traffic,
            SUM(uv_social_traffic_unique)/6 AS monthly_avg_uv_social_traffic,
-           SUM(uv_earned_media_traffic_unique) AS monthly_avg_uv_earned_media_traffic,
-           SUM(uv_marketplace_traffic_unique) AS monthly_avg_uv_marketplace_traffic,
-           SUM(uv_referral_traffic_unique) AS monthly_avg_uv_referral_traffic
+           SUM(uv_earned_media_traffic_unique)/6 AS monthly_avg_uv_earned_media_traffic,
+           SUM(uv_marketplace_traffic_unique)/6 AS monthly_avg_uv_marketplace_traffic,
+           SUM(uv_referral_traffic_unique)/6 AS monthly_avg_uv_referral_traffic
     FROM src
     WHERE date >= DATE_ADD(CURRENT_DATE(), INTERVAL -180 DAY)
 ),
