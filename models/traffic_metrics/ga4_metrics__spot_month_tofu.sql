@@ -32,4 +32,4 @@ UNION ALL
 SELECT DATE_ADD(current_date(), INTERVAL - 3 DAY) as dashboard_date, 
        * 
 FROM src
-WHERE date = SELECT DATE_ADD(latest_date,  INTERVAL - 180 DAY) FROM latest)
+WHERE date = (SELECT DATE_ADD(latest_date,  INTERVAL - 180 DAY) FROM latest)
