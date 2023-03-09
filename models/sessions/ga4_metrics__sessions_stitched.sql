@@ -10,38 +10,39 @@ referrer_mapping AS (
 
 agg AS (
     SELECT DISTINCT session_id,
+            session_number,
             user_pseudo_id,
             anonymous_id,
-            MIN(event_timestamp_utc) OVER ( PARTITION BY session_id ) AS session_start_tstamp,
-            MAX(event_timestamp_utc) OVER ( PARTITION BY session_id ) AS session_end_tstamp,
-            COUNT(DISTINCT event_timestamp_utc) OVER ( PARTITION BY session_id ) AS page_views,
-            FIRST_VALUE(utm_source IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            MIN(event_timestamp_utc) OVER ( PARTITION BY user_pseudo_id, session_id ) AS session_start_tstamp,
+            MAX(event_timestamp_utc) OVER ( PARTITION BY user_pseudo_id, session_id ) AS session_end_tstamp,
+            COUNT(DISTINCT event_timestamp_utc) OVER ( PARTITION BY user_pseudo_id, session_id ) AS page_views,
+            FIRST_VALUE(utm_source IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS utm_source,
             
-            FIRST_VALUE(utm_medium IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            FIRST_VALUE(utm_medium IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS utm_medium,
-            FIRST_VALUE(utm_campaign IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            FIRST_VALUE(utm_campaign IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS utm_campaign,
-            FIRST_VALUE(utm_term IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            FIRST_VALUE(utm_term IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS utm_term,
-            FIRST_VALUE(gclid IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            FIRST_VALUE(gclid IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS gclid,
-            FIRST_VALUE(referrer IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            FIRST_VALUE(referrer IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS referrer,
-            FIRST_VALUE(referrer_host IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            FIRST_VALUE(referrer_host IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS referrer_host,
-            FIRST_VALUE(device IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            FIRST_VALUE(device IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS device,
-            FIRST_VALUE(device_category IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            FIRST_VALUE(device_category IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS device_category,
-            FIRST_VALUE(page_url IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            FIRST_VALUE(page_url IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS first_page_url,
-            FIRST_VALUE(page_url_host IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            FIRST_VALUE(page_url_host IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS first_page_url_host,
             
-            LAST_VALUE(page_url IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            LAST_VALUE(page_url IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_page_url,
-            LAST_VALUE(page_url_host IGNORE NULLS) OVER (PARTITION BY session_id ORDER BY page_view_number
+            LAST_VALUE(page_url_host IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_page_url_host
     FROM pageviews_sessionized
 ),
