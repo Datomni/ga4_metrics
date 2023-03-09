@@ -1,8 +1,7 @@
 {{ config(materialized='incremental') }}
 
 WITH source AS (
-    SELECT *,
-           page_referrer as referrer 
+    SELECT *
     FROM {{ ref('ga4_metrics__events_flattened') }}
     
     {% if is_incremental() %}
@@ -17,6 +16,8 @@ renamed AS (
             user_id,
             anonymous_id,
             event_timestamp_utc,
+            ga_session_id as session_id,
+            ga_session_number as session_number,
             page_title,
             page_location as page_url,
             safe_cast(
@@ -25,12 +26,12 @@ renamed AS (
                         replace(replace(replace(page_location, 'android-app://', ''), 'http://', ''), 'https://', ''), 
                     '/')[safe_offset(0)],
                 '?')[safe_offset(0)] as string) as page_url_host,
-            referrer, 
+            page_referrer as referrer, 
             replace(
                 safe_cast(
                     split(
                         split(
-                            replace(replace(replace(referrer, 'android-app://', ''), 'http://', '') ,'https://', ''),
+                            replace(replace(replace(page_referrer, 'android-app://', ''), 'http://', '') ,'https://', ''),
                         '/')[safe_offset(0)],
                     '?')[safe_offset(0)] as string),
                 'www.', '') as referrer_host,
@@ -42,6 +43,7 @@ renamed AS (
             device_operating_system	as device,
             device_category
     FROM source s
+    WHERE ga_session_id IS NOT NULL
 )
 
 SELECT * FROM renamed
