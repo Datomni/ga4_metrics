@@ -1,4 +1,4 @@
-# Profitwell Metrics dbt Package
+# GA4 Metrics dbt Package
 ## What does this dbt package do?
 * Flattens the GA4 events dataset by extracting the event parameter and user property values into their own fields
 * Groups events into sessions and surfaces session properties like session length, first and last host url, refferer host, and visitor source channel
