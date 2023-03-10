@@ -55,7 +55,7 @@ By default, events are read from the `events_*` table. If your input table name 
 
 In addition, you can configure which timezone should events be converted to for counting daily visitors. By default, daily visitors are counted according to the UTC timezone.
 
-Conversion event marks when a visitor/lead becomes/converted to a customer. The value of 1 indicates conversion, while the value 0 marks no conversion. The conversion event defaults to an empty string, marking all sessions as no convertion.
+Conversion event marks when a visitor/lead becomes/converted to a customer. The value of 1 indicates conversion, while the value 0 marks no conversion. The conversion event defaults to an empty string, marking all sessions as no conversion.
 ```
 # dbt_project.yml
 config-version: 2
