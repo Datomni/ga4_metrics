@@ -24,7 +24,7 @@ stitched_sessions AS (
     SELECT ss.user_pseudo_id,
            ss.session_id,
            ss.session_number,
-           CASE WHEN c.user_pseudo_id IS NULL THEN 0 ELSE 1 END AS converted_count
+           CASE WHEN c.user_pseudo_id IS NULL THEN 0 ELSE 1 END AS converted_flag
     FROM session_src ss
     LEFT JOIN conversions c
     USING (user_pseudo_id, session_id, session_number)
@@ -34,5 +34,5 @@ SELECT DISTINCT
     user_pseudo_id,
     session_id,
     session_number,
-    converted_count
+    converted_flag
 FROM stitched_sessions
