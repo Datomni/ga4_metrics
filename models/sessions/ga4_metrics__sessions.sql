@@ -79,8 +79,8 @@ agg AS (
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS geo_region,
             FIRST_VALUE(geo_city IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS geo_city,
-            FIRST_VALUE(geo_subcontinent IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
-                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS geo_subcontinent,
+            FIRST_VALUE(geo_sub_continent IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
+                ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS geo_sub_continent,
             FIRST_VALUE(geo_metro IGNORE NULLS) OVER (PARTITION BY user_pseudo_id, session_id ORDER BY page_view_number
                 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS geo_metro,
 

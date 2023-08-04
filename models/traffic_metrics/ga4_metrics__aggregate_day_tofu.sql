@@ -8,10 +8,10 @@ filtered_sessions AS (
            -- mediums
            CASE WHEN traffic_source_medium IS NULL OR traffic_source_medium = '(none)' THEN 'organic'
                 WHEN traffic_source_medium = 'cpc' THEN 'paid'
-                WHEN traffic_source_medium IN (SELECT split({{ var("traffic_source_medium_types") }}) THEN traffic_source_medium
+                WHEN traffic_source_medium IN (SELECT * FROM UNNEST({{ var("traffic_source_medium_types") }})) THEN traffic_source_medium
                 ELSE 'other' END AS traffic_medium,
            -- unique users per month
-           ROW_NUMBER() OVER (PARTITION BY domain_userid, {{ dbt.date_trunc('month', 'session_start_tstamp') }}
+           ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, {{ dbt.date_trunc('month', 'session_start_tstamp') }}
                               ORDER BY session_start_tstamp ASC) AS row_num
     FROM src
     WHERE (first_page_url_host <> 'localhost:8101' OR first_page_url_host IS NULL) AND 
@@ -25,8 +25,8 @@ filtered_sessions AS (
           (last_page_url_host <> 'localhost:3000' OR last_page_url_host IS NULL) AND 
           (last_page_url_host <> 'localhost:3000guides' OR last_page_url_host IS NULL) AND 
           (last_page_url_host <> 'localhost:8101' OR last_page_url_host IS NULL) AND
-          duration_in_s >= 5 
-),
+          engaged_time_in_s >= 5
+)
 
 
 SELECT

@@ -55,8 +55,7 @@ pivoted AS (SELECT uuid,
                   {% if var("custom_event_parameters") != [] %}
 
                     {% for param in var('custom_event_parameters') %}
-                        MAX(IF(event_params_key = "{{ param }}", event_params_value, NULL)) AS {{ param }}
-                    {% if not loop.last %}, {% endif %}
+                        MAX(IF(event_params_key = "{{ param }}", event_params_value, NULL)) AS {{ param }},
                     {% endfor %}
 
                   {% endif %}

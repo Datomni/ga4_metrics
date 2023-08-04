@@ -68,8 +68,8 @@ renamed AS (
             geo_country,
             geo_region,
             geo_city,
-            geo_subcontinent,
-            geo_metro
+            geo_sub_continent,
+            geo_metro,
 
             -- device fields
             device_category,
