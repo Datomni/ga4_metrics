@@ -13,10 +13,11 @@ conversions as (
     SELECT user_pseudo_id, 
           ga_session_id as session_id
           -- Custom conversion params
-          {% if var("custom_conversion_event_params", []) != [] %}
+          {% if var("custom_conversion_event_parameters") != [] %}
 
-            {% for param in var('custom_conversion_event_params') %}
-                ,{{ param }}
+            {% for param in var('custom_conversion_event_parameters') %}
+            {% if loop.first %}, {% endif %}
+                {{ param }}
             {% if not loop.last %}, {% endif %}
             {% endfor %}
 
@@ -33,11 +34,10 @@ stitched_sessions AS (
     SELECT ss.user_pseudo_id,
            ss.session_id,
            -- Custom conversion params
-           {% if var("custom_conversion_event_params", []) != [] %}
+           {% if var("custom_conversion_event_parameters") != [] %}
 
-            {% for param in var('custom_conversion_event_params') %}
+            {% for param in var('custom_conversion_event_parameters') %}
                 c.{{ param }},
-            {% if not loop.last %}, {% endif %}
             {% endfor %}
 
            {% endif %}

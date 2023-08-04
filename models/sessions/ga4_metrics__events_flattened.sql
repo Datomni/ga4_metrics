@@ -52,10 +52,10 @@ pivoted AS (SELECT uuid,
                   MAX(IF(event_params_key = "ignore_referrer", event_params_value, NULL)) AS ignore_referrer,
 
                   -- Custom event params
-                  {% if var("custom_event_params", []) != [] %}
+                  {% if var("custom_event_params") != [] %}
 
-                    {% for param in var('custom_event_params') %}
-                        MAX(IF(event_params_key = {{ param }}, event_params_value, NULL)) AS {{ param }},
+                    {% for param in var('custom_event_parameters') %}
+                        MAX(IF(event_params_key = "{{ param }}", event_params_value, NULL)) AS {{ param }}
                     {% if not loop.last %}, {% endif %}
                     {% endfor %}
 
@@ -66,10 +66,11 @@ pivoted AS (SELECT uuid,
                   MAX(IF(user_properties_key = "anonymousId", user_properties_set_timestamp_micros, NULL)) AS anonymous_id_set_timestamp_micros
 
                   -- Custom user_properties
-                  {% if var("custom_user_props", []) != [] %}
+                  {% if var("custom_user_props") != [] %}
 
-                    {% for prop in var('custom_user_props') %}
-                        ,MAX(IF(user_properties_key = {{ prop }}, user_properties_value, NULL)) AS {{ prop }}
+                    {% for prop in var('custom_user_properties') %}
+                    {% if loop.first %}, {% endif %}
+                        ,MAX(IF(user_properties_key = "{{ prop }}", user_properties_value, NULL)) AS {{ prop }}
                     {% if not loop.last %}, {% endif %}
                     {% endfor %}
 
