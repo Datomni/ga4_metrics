@@ -23,7 +23,7 @@ converted_sessions AS (
 SELECT
     DATE(session_start_tstamp) as date,
     {% for medium in var('traffic_source_medium_types') %}
-        (sum(case when LOWER(traffic_medium) = '{{ medium }}' then 1 else 0 end)) as {{ medium | replace(' ', '') }}_visitor_conversions
+        (sum(case when LOWER(traffic_medium) = '{{ medium }}' then 1 else 0 end)) as {{ medium | replace(' ', '_') }}_visitor_conversions
     {% if not loop.last %}, {% endif %}
     {% endfor %}
 FROM converted_sessions
