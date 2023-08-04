@@ -14,12 +14,12 @@ vars:
   conversion_event_name: "{{ var('conversion_event', '') }}"
 
   # custom parameters
-  custom_event_params: "{{ var('custom_event_parameters', ['id', 'type', 'variant']) }}"
+  custom_event_params: "{{ var('custom_event_parameters', []) }}"
   custom_user_props: "{{ var('custom_user_properties', []) }}"
-  custom_conversion_event_params: "{{ var('custom_conversion_event_parameters', ['id', 'type', 'variant']) }}"
+  custom_conversion_event_params: "{{ var('custom_conversion_event_parameters', []) }}"
 
   # medium types for calculating traffic_metrics
-  traffic_source_medium_types: "{{ var('traffic_source_mediums', ['organic', 'paid', 'referral', 'other']) }}"
+  traffic_source_medium_types: "{{ var('traffic_source_mediums', ['organic', 'paid', 'social', 'earned media', 'marketplace', 'referral', 'other']) }}"
 
 
 
