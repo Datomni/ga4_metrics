@@ -21,7 +21,7 @@ converted_sessions AS (
 )
 
 SELECT
-    DATE(session_start_tstamp) as date,
+    DATE(DATETIME(session_start_tstamp, "{{ var('timezone', 'Etc/UCT') }}")) AS date,
     {% for medium in var('traffic_source_medium_types') %}
         (sum(case when LOWER(traffic_medium) = '{{ medium }}' then 1 else 0 end)) as {{ medium | replace(' ', '_') }}_visitor_conversions
     {% if not loop.last %}, {% endif %}

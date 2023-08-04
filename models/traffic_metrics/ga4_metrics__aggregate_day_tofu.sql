@@ -30,7 +30,7 @@ filtered_sessions AS (
 
 
 SELECT
-    DATE(session_start_tstamp) as date,
+    DATE(DATETIME(session_start_tstamp, "{{ var('timezone', 'Etc/UCT') }}")) AS date,
     {% for medium in var('traffic_source_medium_types') %}
         (sum(CASE WHEN LOWER(traffic_medium) = '{{ medium }}' THEN 1 ELSE 0 END)) AS {{ medium | replace(' ', '_') }}_traffic_unique
     {% if not loop.last %}, {% endif %}
