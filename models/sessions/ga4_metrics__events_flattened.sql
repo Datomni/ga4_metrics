@@ -52,7 +52,7 @@ pivoted AS (SELECT uuid,
                   MAX(IF(event_params_key = "ignore_referrer", event_params_value, NULL)) AS ignore_referrer,
 
                   -- Custom event params
-                  {% if var("custom_event_params") != [] %}
+                  {% if var("custom_event_parameters") != [] %}
 
                     {% for param in var('custom_event_parameters') %}
                         MAX(IF(event_params_key = "{{ param }}", event_params_value, NULL)) AS {{ param }}
