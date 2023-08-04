@@ -8,7 +8,7 @@ filtered_sessions AS (
            -- mediums
            CASE WHEN traffic_source_medium IS NULL OR traffic_source_medium = '(none)' THEN 'organic'
                 WHEN traffic_source_medium = 'cpc' THEN 'paid'
-                WHEN traffic_source_medium IN (SELECT split('{{ var("traffic_source_medium_types") }}') THEN traffic_source_medium
+                WHEN traffic_source_medium IN (SELECT split({{ var("traffic_source_medium_types") }}) THEN traffic_source_medium
                 ELSE 'other' END AS traffic_medium,
            -- unique users per month
            ROW_NUMBER() OVER (PARTITION BY domain_userid, {{ dbt.date_trunc('month', 'session_start_tstamp') }}

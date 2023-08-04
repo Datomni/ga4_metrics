@@ -66,7 +66,7 @@ pivoted AS (SELECT uuid,
                   MAX(IF(user_properties_key = "anonymousId", user_properties_set_timestamp_micros, NULL)) AS anonymous_id_set_timestamp_micros
 
                   -- Custom user_properties
-                  {% if var("custom_user_props") != [] %}
+                  {% if var("custom_user_properties") != [] %}
 
                     {% for prop in var('custom_user_properties') %}
                     {% if loop.first %}, {% endif %}
