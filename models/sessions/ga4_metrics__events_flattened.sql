@@ -1,6 +1,7 @@
 {{ config(materialized='incremental') }}
 
-WITH source AS (SELECT 
+--TODO: handle late arriving event
+WITH src AS (SELECT
                     ROW_NUMBER() OVER() AS uuid,
                     *
                 FROM {{ ref('tmp_ga4_metrics__events')}}
@@ -12,26 +13,27 @@ WITH source AS (SELECT
                 {% endif %}
 ),
 
-flattened AS (SELECT *
-              FROM
-                  (SELECT uuid, 
-                        ep.key AS event_params_key,
-                        COALESCE(ep.value.string_value, CAST(ep.value.int_value AS string), 
-                                CAST(ep.value.float_value AS string), CAST(ep.value.double_value AS string)) AS event_params_value
-                  FROM source
-                  CROSS JOIN UNNEST(source.event_params) AS ep)
-              FULL OUTER JOIN 
-                  (SELECT uuid,
-                          up.key AS user_properties_key,
-                          COALESCE(up.value.string_value, CAST(up.value.int_value AS string), 
-                                    CAST(up.value.float_value AS string), CAST(up.value.double_value AS string)) AS user_properties_value,
-                          up.value.set_timestamp_micros AS user_properties_set_timestamp_micros
-                    FROM source
-                    CROSS JOIN UNNEST(source.user_properties) AS up) 
-              USING (uuid)
-              ),
+event_params_flattened AS (
+    SELECT uuid,
+            ep.key AS event_params_key,
+            COALESCE(ep.value.string_value, CAST(ep.value.int_value AS string),
+                    CAST(ep.value.float_value AS string), CAST(ep.value.double_value AS string)) AS event_params_value
+      FROM src
+      CROSS JOIN UNNEST(src.event_params) AS ep
+),
 
-pivoted AS (SELECT uuid, 
+user_properties_flattened AS (
+    SELECT uuid,
+          up.key AS user_properties_key,
+          COALESCE(up.value.string_value, CAST(up.value.int_value AS string),
+                    CAST(up.value.float_value AS string), CAST(up.value.double_value AS string)) AS user_properties_value,
+          up.value.set_timestamp_micros AS user_properties_set_timestamp_micros
+    FROM src
+    CROSS JOIN UNNEST(src.user_properties) AS up
+),
+
+pivoted AS (SELECT uuid,
+                  -- Default event params
                   MAX(IF(event_params_key = "page_title", event_params_value, NULL)) AS page_title,
                   MAX(IF(event_params_key = "ga_session_id", event_params_value, NULL)) AS ga_session_id,
                   MAX(IF(event_params_key = "ga_session_number", event_params_value, NULL)) AS ga_session_number,
@@ -48,31 +50,40 @@ pivoted AS (SELECT uuid,
                   MAX(IF(event_params_key = "percent_scrolled", event_params_value, NULL)) AS percent_scrolled,
                   MAX(IF(event_params_key = "engagement_time_msec", event_params_value, NULL)) AS engagement_time_msec,
                   MAX(IF(event_params_key = "ignore_referrer", event_params_value, NULL)) AS ignore_referrer,
+
+                  -- Custom event params
+                  {% if var("custom_event_params", []) != [] %}
+
+                    {% for param in var('custom_event_params') %}
+                        MAX(IF(event_params_key = {{ param }}, event_params_value, NULL)) AS {{ param }},
+                    {% if not loop.last %}, {% endif %}
+                    {% endfor %}
+
+                  {% endif %}
+
+                  -- Default user_properties
                   MAX(IF(user_properties_key = "anonymousId", user_properties_value, NULL)) AS anonymous_id,
                   MAX(IF(user_properties_key = "anonymousId", user_properties_set_timestamp_micros, NULL)) AS anonymous_id_set_timestamp_micros
-            FROM flattened 
+
+                  -- Custom user_properties
+                  {% if var("custom_user_props", []) != [] %}
+
+                    {% for prop in var('custom_user_props') %}
+                        ,MAX(IF(user_properties_key = {{ prop }}, user_properties_value, NULL)) AS {{ prop }}
+                    {% if not loop.last %}, {% endif %}
+                    {% endfor %}
+
+                  {% endif %}
+            FROM event_params_flattened
+            FULL OUTER JOIN user_properties_flattened
+            USING (uuid)
             GROUP BY uuid)
 
 SELECT s.event_date,
        s.event_timestamp,
        TIMESTAMP_MICROS(s.event_timestamp) AS event_timestamp_utc,
        s.event_name,
-       p.page_title,
-       p.ga_session_id,
-       p.ga_session_number,
-       p.page_location,
-       p.page_referrer,
-       p.term,
-       p.medium,
-       p.entrances,
-       p.gclid,
-       p.source,
-       p.campaign,
-       p.session_engaged,
-       p.engaged_session_event,
-       p.percent_scrolled,
-       p.engagement_time_msec,
-       p.ignore_referrer,
+       p.*,
        s.event_previous_timestamp,
        s.event_value_in_usd,
        s.event_bundle_sequence_id,    
@@ -82,8 +93,6 @@ SELECT s.event_date,
        s.privacy_info.analytics_storage AS privacy_info_analytics_storage,
        s.privacy_info.ads_storage AS privacy_info_ads_storage,
        s.privacy_info.uses_transient_token AS privacy_info_uses_transient_token,
-       p.anonymous_id,
-       p.anonymous_id_set_timestamp_micros,
        s.user_first_touch_timestamp,
        s.user_ltv.revenue AS user_ltv_revenue,
        s.user_ltv.currency AS user_ltv_currency,
@@ -158,5 +167,5 @@ SELECT s.event_date,
        s.items[SAFE_OFFSET(0)].promotion_name AS items_promotion_name,
        s.items[SAFE_OFFSET(0)].creative_name AS items_creative_name,  
        s.items[SAFE_OFFSET(0)].creative_slot AS items_creative_slot
-FROM source s
+FROM src s
 LEFT JOIN pivoted p USING (uuid)

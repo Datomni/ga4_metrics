@@ -1,18 +1,13 @@
 version: 2
 
 seeds:
-  - name: referrer_mapping
-    description: "This is a CSV version of Snowplow's [referer parser database](https://github.com/snowplow-referer-parser/referer-parser)"
+  - name: ga4_source_categories
+    description: "Google's mapping between source and source_category. (Downloaded from https://support.google.com/analytics/answer/9756891?hl=en)"
     columns:
-      - name: medium
-        tests:
-          - not_null
-
       - name: source
         tests:
           - not_null
 
-      - name: host
+      - name: source_category
         tests:
-          - unique
           - not_null

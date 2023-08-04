@@ -6,8 +6,21 @@ require-dbt-version: [">=1.0.0", "<2.0.0"]
 
 
 vars:
+  # calogica/dbt_date variables
+  dbt_date:time_zone: "{{ var('timezone', 'Etc/UCT') }}"
+
+  # ga4 source table variables
   ga4_events_src: "{{ source('ga4', 'events') }}" 
   conversion_event_name: "{{ var('conversion_event', '') }}"
+
+  # custom parameters
+  custom_event_params: "{{ var('custom_event_parameters', ['id', 'type', 'variant']) }}"
+  custom_user_props: "{{ var('custom_user_properties', []) }}"
+  custom_conversion_event_params: "{{ var('custom_conversion_event_parameters', ['id', 'type', 'variant']) }}"
+
+  # medium types for calculating traffic_metrics
+  traffic_source_medium_types: "{{ var('traffic_source_mediums', ['organic', 'paid', 'referral', 'other']) }}"
+
 
 
 models:
@@ -17,4 +30,6 @@ models:
       tmp:
         +materialized: view
     traffic_metrics:
+      +materialized: table
+    visitor_metrics:
       +materialized: table
