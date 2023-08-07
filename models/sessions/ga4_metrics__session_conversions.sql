@@ -1,4 +1,5 @@
 --TODO: make it incremental
+--TODO: add blended user_id to handle cookie deletes or same users accessing site from different devices
 WITH session_src AS (
     SELECT *
     FROM {{ ref('ga4_metrics__sessions') }}
