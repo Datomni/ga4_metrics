@@ -1,3 +1,4 @@
+--TODO: use blended user_id instead of user_pseudo_id?
 WITH conversion_src AS (
     SELECT *
     FROM {{ ref('ga4_metrics__session_conversions') }}

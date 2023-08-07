@@ -1,4 +1,5 @@
 --TODO: add blended user_id to handle cookie deletes or same users accessing site from different devices
+--TODO: better to use traffic_source_medium or event params medium?
 WITH src AS (
     SELECT *
     FROM {{ ref('ga4_metrics__sessions') }}
