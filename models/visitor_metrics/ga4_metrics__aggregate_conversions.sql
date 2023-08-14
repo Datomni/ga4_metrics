@@ -12,9 +12,11 @@ session_src AS (
 
 converted_sessions AS (
     SELECT ss.session_start_tstamp,
-           CASE WHEN ss.traffic_source_medium IS NULL OR ss.traffic_source_medium = '(none)' THEN 'organic'
-                WHEN ss.traffic_source_medium = 'cpc' THEN 'paid'
-                WHEN ss.traffic_source_medium IN (SELECT * FROM UNNEST({{ var("traffic_source_medium_types") }})) THEN ss.traffic_source_medium
+           -- categorise mediums using `traffic_source_medium_types` config variable
+           CASE
+                {% for medium in var('traffic_source_medium_types') %}
+                        WHEN LOWER(traffic_source_medium) IN (SELECT * FROM UNNEST(  {{ var('traffic_source_medium_types')[medium] }})) THEN '{{ medium }}'
+                {% endfor %}
                 ELSE 'other' END AS traffic_medium,
     FROM conversion_src cc
     JOIN session_src ss
@@ -24,8 +26,8 @@ converted_sessions AS (
 SELECT
     DATE(DATETIME(session_start_tstamp, "{{ var('timezone', 'Etc/UCT') }}")) AS date,
     {% for medium in var('traffic_source_medium_types') %}
-        (sum(case when LOWER(traffic_medium) = '{{ medium }}' then 1 else 0 end)) as {{ medium | replace(' ', '_') }}_visitor_conversions
-    {% if not loop.last %}, {% endif %}
+        (sum(CASE WHEN LOWER(traffic_medium) = '{{ medium }}' THEN 1 ELSE 0 END)) AS {{ medium | replace(' ', '_') }}_traffic_unique,
     {% endfor %}
+    (sum(CASE WHEN LOWER(traffic_medium) = 'other' THEN 1 ELSE 0 END)) AS other_traffic_unique
 FROM converted_sessions
 GROUP BY date

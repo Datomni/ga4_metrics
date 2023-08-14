@@ -7,9 +7,9 @@ unioned AS (
     SELECT {{ dbt_date.today() }} AS dashboard_date,
         CONCAT({{ dbt_date.n_days_ago(365) }},' - ',{{ dbt_date.today() }}) AS period,
         {% for medium in var('traffic_source_medium_types') %}
-            sum({{ medium | replace(' ', '_') }}_visitor_conversions) as total_{{ medium | replace(' ', '_') }}_visitor_conversions
-        {% if not loop.last %}, {% endif %}
+            sum({{ medium | replace(' ', '_') }}_visitor_conversions) as total_{{ medium | replace(' ', '_') }}_visitor_conversions,
         {% endfor %}
+        sum(other_visitor_conversions) as total_other_visitor_conversions
     FROM src
     WHERE date >= {{ dbt_date.n_days_ago(365) }}
 
@@ -18,9 +18,9 @@ unioned AS (
     SELECT {{ dbt_date.n_days_ago(1) }} AS dashboard_date,
         CONCAT({{ dbt_date.n_days_ago(730) }},' - ',{{ dbt_date.n_days_ago(366) }}) AS period,
         {% for medium in var('traffic_source_medium_types') %}
-            sum({{ medium | replace(' ', '_') }}_visitor_conversions) as total_{{ medium | replace(' ', '_') }}_visitor_conversions
-        {% if not loop.last %}, {% endif %}
+            sum({{ medium | replace(' ', '_') }}_visitor_conversions) as total_{{ medium | replace(' ', '_') }}_visitor_conversions,
         {% endfor %}
+        sum(other_visitor_conversions) as total_other_visitor_conversions
     FROM src
     WHERE date <= {{ dbt_date.n_days_ago(366) }} AND
         date >= {{ dbt_date.n_days_ago(730) }}
@@ -29,7 +29,7 @@ unioned AS (
 SELECT dashboard_date,
         period,
         {% for medium in var('traffic_source_medium_types') %}
-            COALESCE(total_{{ medium | replace(' ', '_') }}_visitor_conversions, 0) as total_{{ medium | replace(' ', '_') }}_visitor_conversions
-        {% if not loop.last %}, {% endif %}
+            COALESCE(total_{{ medium | replace(' ', '_') }}_visitor_conversions, 0) as total_{{ medium | replace(' ', '_') }}_visitor_conversions,
         {% endfor %}
+        COALESCE(total_other_visitor_conversions, 0) as total_other_visitor_conversions
 FROM unioned

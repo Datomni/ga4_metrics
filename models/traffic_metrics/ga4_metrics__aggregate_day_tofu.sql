@@ -1,5 +1,4 @@
 --TODO: add blended user_id to handle cookie deletes or same users accessing site from different devices
---TODO: better to use traffic_source_medium or event params medium?
 WITH src AS (
     SELECT *
     FROM {{ ref('ga4_metrics__sessions') }}
@@ -7,10 +6,11 @@ WITH src AS (
 
 filtered_sessions AS (
     SELECT *,
-           -- mediums
-           CASE WHEN traffic_source_medium IS NULL OR traffic_source_medium = '(none)' THEN 'organic'
-                WHEN traffic_source_medium = 'cpc' THEN 'paid'
-                WHEN traffic_source_medium IN (SELECT * FROM UNNEST({{ var("traffic_source_medium_types") }})) THEN traffic_source_medium
+           -- categorise mediums using `traffic_source_medium_types` config variable
+           CASE
+                {% for medium in var('traffic_source_medium_types') %}
+                        WHEN LOWER(traffic_source_medium) IN (SELECT * FROM UNNEST(  {{ var('traffic_source_medium_types')[medium] }})) THEN '{{ medium }}'
+                {% endfor %}
                 ELSE 'other' END AS traffic_medium,
            -- unique users per month
            ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, {{ dbt.date_trunc('month', 'session_start_tstamp') }}
@@ -34,9 +34,9 @@ filtered_sessions AS (
 SELECT
     DATE(DATETIME(session_start_tstamp, "{{ var('timezone', 'Etc/UCT') }}")) AS date,
     {% for medium in var('traffic_source_medium_types') %}
-        (sum(CASE WHEN LOWER(traffic_medium) = '{{ medium }}' THEN 1 ELSE 0 END)) AS {{ medium | replace(' ', '_') }}_traffic_unique
-    {% if not loop.last %}, {% endif %}
+        (sum(CASE WHEN LOWER(traffic_medium) = '{{ medium }}' THEN 1 ELSE 0 END)) AS {{ medium | replace(' ', '_') }}_traffic_unique,
     {% endfor %}
+    (sum(CASE WHEN LOWER(traffic_medium) = 'other' THEN 1 ELSE 0 END)) AS other_traffic_unique
 FROM filtered_sessions
 WHERE row_num = 1
 GROUP BY date
