@@ -8,7 +8,7 @@ unioned AS (
         CONCAT({{ dbt_date.n_days_ago(365) }},' - ',{{ dbt_date.today() }}) AS period,
         {% for medium in var('traffic_source_medium_types') %}
             sum({{ medium | replace(' ', '_') }}_traffic_unique) as total_{{ medium | replace(' ', '_') }}_traffic,
-        {% endfor %
+        {% endfor %}
         sum(other_traffic_unique) as total_other_traffic
     FROM src
     WHERE date >= {{ dbt_date.n_days_ago(365) }}
