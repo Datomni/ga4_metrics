@@ -31,5 +31,5 @@ SELECT dashboard_date,
         {% for medium in var('traffic_source_medium_types') %}
             COALESCE(total_{{ medium | replace(' ', '_') }}_visitor_conversions, 0) as total_{{ medium | replace(' ', '_') }}_visitor_conversions,
         {% endfor %}
-        COALESCE(other_visitor_conversions, 0) as total_other_visitor_conversions
+        COALESCE(total_other_visitor_conversions, 0) as total_other_visitor_conversions
 FROM unioned

@@ -56,5 +56,5 @@ SELECT dashboard_date,
         {% for medium in var('traffic_source_medium_types') %}
             COALESCE(monthly_avg_{{ medium | replace(' ', '_') }}_visitor_conversions, 0) as monthly_avg_{{ medium | replace(' ', '_') }}_visitor_conversions,
         {% endfor %}
-        COALESCE(other_visitor_conversions, 0) as monthly_avg_other_visitor_conversions
+        COALESCE(monthly_avg_other_visitor_conversions, 0) as monthly_avg_other_visitor_conversions
 FROM unioned
