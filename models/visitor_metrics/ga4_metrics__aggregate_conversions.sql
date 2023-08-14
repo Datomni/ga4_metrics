@@ -26,8 +26,8 @@ converted_sessions AS (
 SELECT
     DATE(DATETIME(session_start_tstamp, "{{ var('timezone', 'Etc/UCT') }}")) AS date,
     {% for medium in var('traffic_source_medium_types') %}
-        (sum(CASE WHEN LOWER(traffic_medium) = '{{ medium }}' THEN 1 ELSE 0 END)) AS {{ medium | replace(' ', '_') }}_traffic_unique,
+        (sum(CASE WHEN LOWER(traffic_medium) = '{{ medium }}' THEN 1 ELSE 0 END)) AS {{ medium | replace(' ', '_') }}_visitor_conversions,
     {% endfor %}
-    (sum(CASE WHEN LOWER(traffic_medium) = 'other' THEN 1 ELSE 0 END)) AS other_traffic_unique
+    (sum(CASE WHEN LOWER(traffic_medium) = 'other' THEN 1 ELSE 0 END)) AS other_visitor_conversions
 FROM converted_sessions
 GROUP BY date
