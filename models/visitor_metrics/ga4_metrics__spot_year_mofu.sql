@@ -1,6 +1,6 @@
 WITH src AS (
     SELECT *
-    FROM {{ ref('ga4_metrics__aggregate_day_tofu') }}
+    FROM {{ ref('ga4_metrics__aggregate_conversions') }}
 ),
 
 latest AS (

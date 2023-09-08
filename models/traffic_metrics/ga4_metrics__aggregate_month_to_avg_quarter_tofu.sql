@@ -4,42 +4,36 @@ WITH src AS (
 ),
 
 traffic_last30_days AS (
-    SELECT CURRENT_DATE() AS dashboard_date,
-           CONCAT(DATE_ADD(CURRENT_DATE(), INTERVAL -30 DAY),' - ',CURRENT_DATE()) AS period, 
-           SUM(uv_organic_traffic_unique) AS monthly_avg_uv_organic_traffic,
-           SUM(uv_paid_traffic_unique) AS monthly_avg_uv_paid_traffic,
-           SUM(uv_social_traffic_unique) AS monthly_avg_uv_social_traffic,
-           SUM(uv_earned_media_traffic_unique) AS monthly_avg_uv_earned_media_traffic,
-           SUM(uv_marketplace_traffic_unique) AS monthly_avg_uv_marketplace_traffic,
-           SUM(uv_referral_traffic_unique) AS monthly_avg_uv_referral_traffic
+    SELECT {{ dbt_date.today() }} AS dashboard_date,
+           CONCAT({{ dbt_date.n_days_ago(30) }},' - ',{{ dbt_date.today() }}) AS period,
+           {% for medium in var('traffic_source_medium_types') %}
+                sum({{ medium | replace(' ', '_') }}_traffic_unique) as monthly_avg_{{ medium | replace(' ', '_') }}_traffic,
+            {% endfor %}
+            sum(other_traffic_unique) as monthly_avg_other_traffic
     FROM src
-    WHERE date >= DATE_ADD(CURRENT_DATE(), INTERVAL -30 DAY)
+    WHERE date >= {{ dbt_date.n_days_ago(30) }}
 ),
 
 traffic_last90_days AS (
-    SELECT date_add(CURRENT_DATE(), INTERVAL -1 DAY) AS dashboard_date,
-           CONCAT(DATE_ADD(CURRENT_DATE(), INTERVAL -90 DAY),' - ',CURRENT_DATE()) AS period, 
-           SUM(uv_organic_traffic_unique)/3 AS monthly_avg_uv_organic_traffic,
-           SUM(uv_paid_traffic_unique)/3 AS monthly_avg_uv_paid_traffic,
-           SUM(uv_social_traffic_unique)/3 AS monthly_avg_uv_social_traffic,
-           SUM(uv_earned_media_traffic_unique)/3 AS monthly_avg_uv_earned_media_traffic,
-           SUM(uv_marketplace_traffic_unique)/3 AS monthly_avg_uv_marketplace_traffic,
-           SUM(uv_referral_traffic_unique)/3 AS monthly_avg_uv_referral_traffic
+    SELECT {{ dbt_date.n_days_ago(1) }} AS dashboard_date,
+           CONCAT({{ dbt_date.n_days_ago(90) }},' - ',{{ dbt_date.today() }}) AS period,
+           {% for medium in var('traffic_source_medium_types') %}
+                sum({{ medium | replace(' ', '_') }}_traffic_unique)/3 as monthly_avg_{{ medium | replace(' ', '_') }}_traffic,
+            {% endfor %}
+            sum(other_traffic_unique)/3 as monthly_avg_other_traffic
     FROM src
-    WHERE date >= DATE_ADD(CURRENT_DATE(), INTERVAL -90 DAY)
+    WHERE date >= {{ dbt_date.n_days_ago(90) }}
 ),
 
 traffic_last180_days AS (
-    SELECT date_add(CURRENT_DATE(), INTERVAL -2 DAY) AS dashboard_date,
-           CONCAT(DATE_ADD(CURRENT_DATE(), INTERVAL -180 DAY),' - ',CURRENT_DATE()) AS period, 
-           SUM(uv_organic_traffic_unique)/6 AS monthly_avg_uv_organic_traffic,
-           SUM(uv_paid_traffic_unique)/6 AS monthly_avg_uv_paid_traffic,
-           SUM(uv_social_traffic_unique)/6 AS monthly_avg_uv_social_traffic,
-           SUM(uv_earned_media_traffic_unique)/6 AS monthly_avg_uv_earned_media_traffic,
-           SUM(uv_marketplace_traffic_unique)/6 AS monthly_avg_uv_marketplace_traffic,
-           SUM(uv_referral_traffic_unique)/6 AS monthly_avg_uv_referral_traffic
+    SELECT {{ dbt_date.n_days_ago(2) }} AS dashboard_date,
+           CONCAT({{ dbt_date.n_days_ago(180) }},' - ',{{ dbt_date.today() }}) AS period,
+           {% for medium in var('traffic_source_medium_types') %}
+                sum({{ medium | replace(' ', '_') }}_traffic_unique)/6 as monthly_avg_{{ medium | replace(' ', '_') }}_traffic,
+            {% endfor %}
+            sum(other_traffic_unique)/6 as monthly_avg_other_traffic
     FROM src
-    WHERE date >= DATE_ADD(CURRENT_DATE(), INTERVAL -180 DAY)
+    WHERE date >= {{ dbt_date.n_days_ago(180) }}
 ),
 
 unioned AS (
@@ -59,10 +53,8 @@ unioned AS (
 
 SELECT dashboard_date,
         period,
-        COALESCE(monthly_avg_uv_organic_traffic, 0) AS monthly_avg_uv_organic_traffic,
-        COALESCE(monthly_avg_uv_paid_traffic, 0) AS monthly_avg_uv_paid_traffic,
-        COALESCE(monthly_avg_uv_social_traffic, 0) AS monthly_avg_uv_social_traffic,
-        COALESCE(monthly_avg_uv_earned_media_traffic, 0) AS monthly_avg_uv_earned_media_traffic,
-        COALESCE(monthly_avg_uv_marketplace_traffic, 0) AS monthly_avg_uv_marketplace_traffic,
-        COALESCE(monthly_avg_uv_referral_traffic, 0) AS monthly_avg_uv_referral_traffic
+        {% for medium in var('traffic_source_medium_types') %}
+            COALESCE(monthly_avg_{{ medium | replace(' ', '_') }}_traffic, 0) as monthly_avg_{{ medium | replace(' ', '_') }}_traffic,
+        {% endfor %}
+        COALESCE(monthly_avg_other_traffic, 0) as monthly_avg_other_traffic
 FROM unioned
